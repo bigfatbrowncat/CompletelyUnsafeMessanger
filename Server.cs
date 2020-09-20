@@ -8,15 +8,51 @@ using System.Net.WebSockets;
 using System.IO;
 using System.Reflection;
 using Microsoft.Data.Sqlite;
-using System.Runtime.InteropServices.ComTypes;
 using System.Linq;
+using Mono.Options;
 
-namespace HttpListenerWebSocketEcho
+namespace CompletelyUnsafeMessenger
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
+            Console.WriteLine("Completely Unsafe Messenger 0.1");
+            Console.WriteLine();
+
+            string appName = Assembly.GetExecutingAssembly().GetName().Name;
+
+            bool showHelp = false;
+            short port = 8080;
+            string addr = "+";
+            string dbName = "messages.db";
+
+            var p = new OptionSet();
+            p.Add<short>("p|port=", "the port number to listen to (8080 by default)", v => port = v);
+            p.Add<string>("a|addr=", "the address to listen to ('+' by default)", v => addr = v);
+            p.Add<string>("d|db=", "database file (messages.db by default)", v => dbName = v);
+            p.Add("h|help", "show this message and exit", v => showHelp = (v != null));
+
+            List<string> extra;
+            try
+            {
+                extra = p.Parse(args);
+            }
+            catch (OptionException e)
+            {
+                Console.WriteLine("[Main] " + e.Message);
+                Console.WriteLine("Try \"" + appName + " --help\" for more information.");
+                return 1;
+            }
+
+            if (showHelp)
+            {
+                Console.WriteLine("Usage: " + appName + " [options]");
+                Console.WriteLine();
+                p.WriteOptionDescriptions(Console.Out);
+                return 0;
+            }
+
             // Global configuration
             Console.OutputEncoding = Encoding.UTF8;
 
@@ -38,8 +74,9 @@ namespace HttpListenerWebSocketEcho
 
             Console.WriteLine("[Main] Press Ctrl+C to exit...");
 
-            server.Load("messages.db");
-            server.Start("http://+:8080/").Wait();
+            server.Load(dbName);
+            server.Start("http://" + addr + ":" + port + "/").Wait();
+            return 0;
         }
     }
 
@@ -101,6 +138,11 @@ namespace HttpListenerWebSocketEcho
         private readonly List<Message> list = new List<Message>();
         public IReadOnlyCollection<Message> List { get { return list.AsReadOnly(); } }
 
+        public Messages(string dbName)
+        {
+            this.dbName = dbName;
+        }
+
         public void Add(Message message)
         {
             lock (this)
@@ -157,7 +199,7 @@ namespace HttpListenerWebSocketEcho
         }
 
 
-        public bool LoadFromDB(string dbName)
+        public bool LoadFromDB()
         {
             lock (this)
             {
@@ -237,7 +279,7 @@ namespace HttpListenerWebSocketEcho
 
     class Server
     {
-        private readonly Messages messages = new Messages();
+        private Messages messages;
 
         private readonly Mutex socketsAndMessagesMutex = new Mutex();
         private readonly HashSet<WebSocket> connectedSockets = new HashSet<WebSocket>();
@@ -277,7 +319,9 @@ namespace HttpListenerWebSocketEcho
 
         public void Load(string dbName)
         {
-            if (messages.LoadFromDB(dbName))
+            messages = new Messages(dbName);
+
+            if (messages.LoadFromDB())
             {
                 Console.WriteLine("[Server.Load] Messages database {0} loaded succesfully", dbName);
             }
