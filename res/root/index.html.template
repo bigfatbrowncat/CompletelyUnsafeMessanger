@@ -1,0 +1,39 @@
+﻿<html>
+<head>
+    <meta charset="utf-8" />
+    <title>{Application.ProductName}</title>
+    <link rel="stylesheet" href="main.css" />
+</head>
+<body>
+    <ul id="cards">
+    </ul>
+
+    <div class="editor fadein">
+        <form id="imageForm">
+            <div>
+                <div id="input-frame">
+                    <input id="filename" type="file" accept="image/jpeg,image/png,image/bmp,image/tiff" style="display:none;" multiple />
+                    <div id="preview-outer-div">
+                        <div id="preview-inner-div">
+                            <img id="preview" />
+                        </div>
+                    </div>
+                </div>
+                <input type="submit" value="Send image" /><input type="button" id="browse" value="Browse..." />
+            </div>
+        </form>
+        <form id="textForm">
+            <div>
+                <div id="input-frame">
+                    <textarea id="message"></textarea>
+                </div>
+                <input type="submit" value="Send text" />
+            </div>
+        </form>
+    </div>
+    <div class="credits">Powered by <em>bigfatbrowncat's</em> {Application.ProductName} v{Application.Version}</div>
+
+    <script src="index.js">
+    </script>
+</body>
+</html>

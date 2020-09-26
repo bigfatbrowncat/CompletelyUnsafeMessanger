@@ -1,0 +1,28 @@
+﻿<html>
+<head>
+    <title>Resource not found &#151; {Application.ProductName}</title>
+    <style>
+        body {
+            max-width: 1000px;
+            min-width: 612px;
+            margin: auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        div.credits {
+            text-align: center;
+            color: #888888;
+            font-size: 80%;
+            margin: 10pt;
+        }
+        
+        div.main {
+            margin: 50pt 20pt 50pt 20pt;
+        }
+    </style>
+</head>
+<body>
+    <div class="main"><h1>Error 404</h1> The requested resource not found</div>
+    <div class="credits">Powered by <em>bigfatbrowncat's</em> {Application.ProductName} v{Application.Version}</div>
+</body>
+</html>

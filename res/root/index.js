@@ -1,30 +1,37 @@
 (function () {
-    // public method for encoding an Uint8Array to base64
-    function encodeToBase64(input) {
-        var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-        var output = "";
-        var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-        var i = 0;
+    // Using these tags is safe for the text inside a card
+    var safeTags = [
+        "B", "I", "U", "S", "EM", "STRONG", "P",
+        "SPAN", "DIV",
+        "H1", "H2", "H3", "H4", "H5", "H6"
+    ];
 
-        while (i < input.length) {
-            chr1 = input[i++];
-            chr2 = i < input.length ? input[i++] : Number.NaN; // Not sure if the index 
-            chr3 = i < input.length ? input[i++] : Number.NaN; // checks are needed here
+    // Make th HTML safe for inserting to a card.
+    // This function removes every tag except the ones listed in 'safeTags'
+    function safifyHTML(str) {
+        var parser = new DOMParser();
+        var htmlDoc = parser.parseFromString(str, 'text/html');
+        var done;
+        do {
+            var all = htmlDoc.body.getElementsByTagName("*");
 
-            enc1 = chr1 >> 2;
-            enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-            enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-            enc4 = chr3 & 63;
+            done = true;
+            for (var i = 0, max = all.length; i < max; i++) {
+                var node = all[i];
+                console.log("node: " + node.tagName);
 
-            if (isNaN(chr2)) {
-                enc3 = enc4 = 64;
-            } else if (isNaN(chr3)) {
-                enc4 = 64;
+                if (safeTags.indexOf(node.tagName.toUpperCase()) === -1) {
+                    //var newDiv = document.createElement('div');
+                    //newDiv.innerHTML = node.innerHTML;
+                    //node.replaceWith(newDiv);
+                    node.outerHTML = node.innerHTML;
+                    done = false;
+                    break;
+                }
             }
-            output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
-                keyStr.charAt(enc3) + keyStr.charAt(enc4);
-        }
-        return output;
+        } while (!done);
+
+        return htmlDoc.body.innerHTML;
     }
 
     var webSocketProtocol = location.protocol == "https:" ? "wss:" : "ws:";
@@ -47,26 +54,48 @@
     };
 
     socket.onmessage = function (event) {
-        var messagesList = document.getElementById("messages");
+        var cardsList = document.getElementById("cards");
         var node = document.createElement("li");
+        node.classList.add("fadein");
 
         if (event.data instanceof ArrayBuffer)
         {
-            var arrayBuffer = event.data;
-            var bytes = new Uint8Array(arrayBuffer);
-
-            var image = document.createElement("img");
-            image.style.maxWidth = 600;
-            image.style.maxHeight = 600;
-            image.src = 'data:image/png;base64,' + encodeToBase64(bytes);
-            node.appendChild(image);
+            // Disabled by the current protocol (sending images
+            // from server to client thru WebSocket is ineffective)
+            console.log("Sending binary from server to client is unsupported in this protocol");
         }
         else
         {
-            var textnode = document.createTextNode(event.data);
-            node.appendChild(textnode);
+            var command = JSON.parse(event.data);
+            if (command.type == "add_card") {
+                if (command.card.type == "text") {
+                    // Text card
+                    node.classList.add("text");
+                    //var textnode = document.createTextNode(command.card.text);
+                    //node.appendChild(textnode);
+                    var innerElement = document.createElement("div");
+                    innerElement.innerHTML = safifyHTML(command.card.text);
+                    node.appendChild(innerElement);
+                }
+                else if (command.card.type == "image") {
+                    // File name
+                    node.classList.add("image");
+                    var filenameDiv = document.createElement("div");
+                    filenameDiv.className = "filename";
+                    var textnode = document.createTextNode(command.card.filename);
+                    filenameDiv.appendChild(textnode);
+                    node.appendChild(filenameDiv);
+
+                    // Image
+                    var image = document.createElement("img");
+                    image.style.maxWidth = 600;
+                    image.style.maxHeight = 600;
+                    image.src = command.card.link;
+                    node.appendChild(image);
+                }
+            }
         }
-        messagesList.appendChild(node);
+        cardsList.appendChild(node);
 
         console.log("Data received: " + event.data);
     };
@@ -85,7 +114,14 @@
 
     textForm.onsubmit = function () {
         if (message.value != '') {
-            socket.send(message.value);
+            var addTextCardCommand = {
+                type: "add_card",
+                card: {
+                    type: "text",
+                    text: message.value
+                }
+            };
+            socket.send(JSON.stringify(addTextCardCommand));
             message.value = '';
         }
         return false;   // Don't submit the form in the regular way
@@ -101,9 +137,23 @@
                 reader.loadend = function () {
                 }
                 reader.onload = function (e) {
+                    // Sending the upload_image_card command
+                    var uploadImageCardCommand = {
+                        type: "upload_image_card",
+                        card: {
+                            type: "image",
+                            filename: file.name,
+                            size: file.size,
+                            mimeType: file.type
+                        }
+                    };
+                    socket.send(JSON.stringify(uploadImageCardCommand));
+
+                    // Sending the image data
                     rawData = e.target.result;
                     socket.send(rawData);
-                    console.log("file has been transferred.")
+
+                    // Clearing the form
                     imageForm.reset();
                     preview.src = "";
                 }
