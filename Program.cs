@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Text;
 
@@ -9,6 +10,11 @@ namespace CompletelyUnsafeMessenger
 {
     class Program
     {
+        /// <summary>
+        /// The application's version info printed everywhere
+        /// </summary>
+        static readonly FileVersionInfo applicationVersionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetCallingAssembly().Location);
+
         /// <summary>
         /// The application entry point
         /// </summary>
@@ -19,12 +25,15 @@ namespace CompletelyUnsafeMessenger
             try
             {
                 // Global configuration
-                FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(Assembly.GetCallingAssembly().Location);
                 Console.OutputEncoding = Encoding.UTF8;
 
                 // Welcome
-                Console.WriteLine(fvi.ProductName + " v" + fvi.ProductVersion);
+                Console.WriteLine(applicationVersionInfo.ProductName + " v" + applicationVersionInfo.ProductVersion);
                 Console.WriteLine();
+                if (args.Length == 0)
+                {
+                    Console.WriteLine("Run the application with -h or --help option to list all the command line parameters");
+                }
 
                 // Processing the command line
                 string appName = Assembly.GetExecutingAssembly().GetName().Name;
@@ -33,13 +42,17 @@ namespace CompletelyUnsafeMessenger
                 short port = 8080;
                 string addr = "+";
                 string deskFileName = "desk.json";
-                string dataFilesRoot = ".";
+                string dataFilesRoot = "data";
+                string cacheFilesRoot = "cache";
+                bool rebuildImageCache = false;
 
                 var p = new OptionSet();
                 p.Add<short>("p|port=", "the port number to listen to (8080 by default)", v => port = v);
                 p.Add<string>("a|addr=", "the address to listen to ('+' by default)", v => addr = v);
                 p.Add<string>("d|desk=", "desk file (desk.json by default)", v => deskFileName = v);
-                p.Add<string>("r|data_root=", "data files root ('.' by default)", v => dataFilesRoot = v);
+                p.Add<string>("dr|data_root=", "data files root ('data' by default)", v => dataFilesRoot = v);
+                p.Add<string>("cr|cache_root=", "cache files root ('cache' by default)", v => cacheFilesRoot = v);
+                p.Add("ric|rebuild_image_cache", "rebuild caches for all images (false by default)", v => rebuildImageCache = (v != null));
                 p.Add("h|help", "show this message and exit", v => showHelpAndExit = (v != null));
 
                 try
@@ -63,12 +76,12 @@ namespace CompletelyUnsafeMessenger
 
                 var templateVariables = new Dictionary<string, string>()
                 {
-                    { "Application.ProductName", fvi.ProductName },
-                    { "Application.Version", fvi.ProductVersion }
+                    { "Application.ProductName", applicationVersionInfo.ProductName },
+                    { "Application.Version", applicationVersionInfo.ProductVersion }
                 };
 
                 // Setting up the server
-                var server = new Server(dataFilesRoot, templateVariables);
+                var server = new Server(dataFilesRoot, cacheFilesRoot, templateVariables, rebuildImageCache);
 
                 Console.CancelKeyPress += (object sender, ConsoleCancelEventArgs e) =>
                 {
@@ -85,7 +98,8 @@ namespace CompletelyUnsafeMessenger
                     }
                 };
 
-                Logger.Log("Press Ctrl+C to exit...");
+                Console.WriteLine("Press Ctrl+C to stop the server and exit...");
+                Console.WriteLine();
 
                 // Loading the desk data from the saved file
                 server.Load(deskFileName);

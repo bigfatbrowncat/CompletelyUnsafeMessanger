@@ -8,16 +8,14 @@ using System.Net.WebSockets;
 using System.IO;
 using System.Reflection;
 using System.Web;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using ApacheMimeTypes;
 
 namespace CompletelyUnsafeMessenger
 {
     /// <summary>
     /// <para>The server class</para>
     /// 
-    /// <para>This class represents the HTTP and WebSocket server logic of the application.</para>
+    /// <para>This class represents the HTTP and WebSocket server logic of the application</para>
     /// </summary>
     class Server
     {
@@ -30,6 +28,11 @@ namespace CompletelyUnsafeMessenger
         /// The desk controller
         /// </summary>
         private readonly Controller.Desk deskController = new Controller.Desk();
+
+        /// <summary>
+        /// The images data folder / cache controller
+        /// </summary>
+        private readonly Controller.Images imagesController;
 
         /// <summary>
         /// The serializer
@@ -47,25 +50,15 @@ namespace CompletelyUnsafeMessenger
         private readonly object stoppingLock = new object();
 
         /// <summary>
-        /// A lock used to synchronize file writing process
-        /// </summary>
-        private readonly ReaderWriterLock fileReaderWriterLock = new ReaderWriterLock();
-
-        /// <summary>
         /// The list of client sockets currently connected to the server
         /// </summary>
         private readonly HashSet<WebSocket> connectedSockets = new HashSet<WebSocket>();
 
         /// <summary>
-        /// Servr stopped flag
+        /// Server stopped flag
         /// </summary>
         private bool stopped;
         
-        /// <summary>
-        /// Path to the user-uploaded files
-        /// </summary>
-        private string dataFilesRoot;
-
         /// <summary>
         /// The variables passed into the text templates
         /// </summary>
@@ -90,10 +83,15 @@ namespace CompletelyUnsafeMessenger
             }
         }
 
-        public Server(string dataFilesRoot, Dictionary<string, string> templateVariablesTable)
+        public Server(string dataFilesRoot, string imagesCache, Dictionary<string, string> templateVariablesTable, bool rebuildImageCaches = false)
         {
-            this.dataFilesRoot = dataFilesRoot;
             this.templateVariablesTable = templateVariablesTable;
+
+            Directory.CreateDirectory(dataFilesRoot);
+            Directory.CreateDirectory(imagesCache);
+
+            imagesController = new Controller.Images(dataFilesRoot, imagesCache);
+            if (rebuildImageCaches) imagesController.RebuildAllCaches();
         }
 
         /// <summary>
@@ -284,23 +282,15 @@ namespace CompletelyUnsafeMessenger
                 {
                     // '/data' urls are the resources that were uploaded by the user
                     // so we are reading them from the data folder
-                    string dataResName = Path.Combine(dataFilesRoot, HttpUtility.UrlDecode(resourceName.Substring(5)));
+                    string imageFilename = HttpUtility.UrlDecode(resourceName.Substring(5));
 
-                    try
+                    Logger.Log("Responding with file: " + imageFilename);
+                    imagesController.UsingScreen(imageFilename, (Stream screenImageStream) =>
                     {
-                        fileReaderWriterLock.AcquireReaderLock(Timeout.Infinite);
-
-                        // Loading the file and responding
-                        using var fs = new FileStream(dataResName, FileMode.Open);
                         listenerContext.Response.StatusCode = 200;
-                        fs.CopyTo(listenerContext.Response.OutputStream);
+                        screenImageStream.CopyTo(listenerContext.Response.OutputStream);
                         listenerContext.Response.Close();
-                        Logger.Log("Responding with file: " + dataResName);
-                    }
-                    finally
-                    {
-                        fileReaderWriterLock.ReleaseReaderLock();
-                    }
+                    });
                 }
                 else
                 {
@@ -380,7 +370,7 @@ namespace CompletelyUnsafeMessenger
         private enum Expecting { Command, AppendedBinary }
 
         /// <summary>
-        /// An asynchroneous method for a plain HTTP request processing
+        /// An asynchroneous method for a WebSocket request processing
         /// </summary>
         /// <param name="listenerContext">Listener context</param>
         private async void ProcessWebSocketRequestAsync(HttpListenerContext listenerContext)
@@ -409,7 +399,7 @@ namespace CompletelyUnsafeMessenger
                 connectedSockets.Add(webSocket);
 
                 // Sending all the previous messages to the new client
-                Logger.Log("Sending " + deskController.Cards.Count + " old cards to the a new client");
+                Logger.Log("Sending " + deskController.Cards.Count + " old cards to the new client");
                 foreach (var oldCard in deskController.Cards)
                 {
                     // Making an add_card command for the selected card
@@ -526,22 +516,15 @@ namespace CompletelyUnsafeMessenger
                                         // Our current command is upload_image_card
                                         var uploadImageMessageCommand = receivedCommand as Model.Commands.UploadImageCardCommand;
 
-                                        try
-                                        {
-                                            fileReaderWriterLock.AcquireWriterLock(Timeout.Infinite);
-                                            // Saving the received binary as a file
-                                            File.WriteAllBytes(uploadImageMessageCommand.Card.Filename, (receivedGram as BinaryWebSockGram).Data.ToArray());
-                                        }
-                                        finally
-                                        {
-                                            fileReaderWriterLock.ReleaseWriterLock();
-                                        }
+                                        // Saving the received image
+                                        byte[] imageData = (receivedGram as BinaryWebSockGram).Data.ToArray();
+                                        var savedImageFileName = imagesController.Add(uploadImageMessageCommand.Card.Filename, new MemoryStream(imageData));
 
                                         lock (socketsAndMessagesLock)
                                         {
                                             // Setting up the link to the saved file. Adding it to the received Card data
                                             var imageFileCard = uploadImageMessageCommand.Card;
-                                            imageFileCard.Link = new Uri(listenerContext.Request.Url, "data/" + uploadImageMessageCommand.Card.Filename);
+                                            imageFileCard.Link = new Uri(listenerContext.Request.Url, "data/" + savedImageFileName);
 
                                             // Creating a new card in the controller, containing the received image
                                             deskController.AddCard(imageFileCard);

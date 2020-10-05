@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ApacheMimeTypes
+namespace CompletelyUnsafeMessenger
 {
 	/// <summary>
 	/// <para>These MIME types are converted from Apache server MIME type table</para>
