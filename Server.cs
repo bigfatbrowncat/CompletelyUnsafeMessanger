@@ -25,9 +25,9 @@ namespace CompletelyUnsafeMessenger
         private HttpListener listener = null;
 
         /// <summary>
-        /// The desk controller
+        /// The cabinet controller
         /// </summary>
-        private readonly Controller.Desk deskController = new Controller.Desk();
+        private readonly Controller.Cabinet cabinetController = new Controller.Cabinet();
 
         /// <summary>
         /// The images data folder / cache controller
@@ -121,7 +121,7 @@ namespace CompletelyUnsafeMessenger
         {
             try
             {
-                deskController.Load(deskFileName);
+                cabinetController.Load(deskFileName);
 
                 Logger.Log(String.Format("Messages database {0} loaded succesfully", deskFileName));
             }
@@ -295,7 +295,7 @@ namespace CompletelyUnsafeMessenger
                 else
                 {
                     // Prepending the prefix
-                    resourceName = assembly.GetName().Name + ".res.root." + resourceName;
+                    resourceName = assembly.GetName().Name + ".res.root." + resourceName.Replace("/", ".");
 
                     using (Stream stream = assembly.GetManifestResourceStream(resourceName))
                     {
@@ -399,11 +399,11 @@ namespace CompletelyUnsafeMessenger
                 connectedSockets.Add(webSocket);
 
                 // Sending all the previous messages to the new client
-                Logger.Log("Sending " + deskController.Cards.Count + " old cards to the new client");
-                foreach (var oldCard in deskController.Cards)
+                Logger.Log("Sending " + cabinetController.Cards.Count + " old cards to the new client");
+                foreach (var oldCard in cabinetController.Cards)
                 {
                     // Making an add_card command for the selected card
-                    var addCommand = new Model.Commands.AddCardCommand(oldCard);
+                    var addCommand = new Model.Commands.UpdateCardCommand(oldCard.Key, oldCard.Value);
                     var addCommandGram = new TextWebSockGram(serializer.SerializeCommand(addCommand));
 
                     // Sending the command to the new client
@@ -411,7 +411,7 @@ namespace CompletelyUnsafeMessenger
                 }
             }
 
-            // We are expecting a commend to be sent from  the client
+            // We are expecting a command to be sent from  the client
             Expecting expecting = Expecting.Command;
 
             // Here the received command will be held if we will be waiting for an appended binary data
@@ -476,17 +476,17 @@ namespace CompletelyUnsafeMessenger
                                     var command = serializer.DeserializeCommand(receivedGram.ToString());
 
                                     // Executing the received command
-                                    if (command is Model.Commands.AddCardCommand)
+                                    if (command is Model.Commands.UpdateCardCommand)
                                     {
-                                        var addCardCommand = command as Model.Commands.AddCardCommand;
+                                        var updateCardCommand = command as Model.Commands.UpdateCardCommand;
 
                                         lock (socketsAndMessagesLock)
                                         {
                                             // Giving the received message to the controller
-                                            deskController.AddCard(addCardCommand.Card);
+                                            cabinetController.UpdateCard(updateCardCommand.Id, updateCardCommand.Value);
 
                                             // Broadcasting the message
-                                            Logger.Log("Broadcasting the new card " + addCardCommand.Card  + " to the " + connectedSockets.Count + " connected clients");
+                                            Logger.Log("Broadcasting the new card " + updateCardCommand.Value  + " to the " + connectedSockets.Count + " connected clients");
                                             receivedGram.Broadcast(connectedSockets).Wait();
                                         }
                                     }
@@ -498,6 +498,15 @@ namespace CompletelyUnsafeMessenger
 
                                         // ...and setting the state machine to expect binary appended to the command.
                                         expecting = Expecting.AppendedBinary;
+                                    }
+                                    else if (command is Model.Commands.ListCardIDsCommand)
+                                    {
+                                        // Sending all the cards ids
+                                        IList<string> ids = cabinetController.ListCardIDs();
+                                        Model.Commands.ListCardIDsCommand response = new Model.Commands.ListCardIDsCommand(ids);
+                                        var ser = serializer.SerializeCommand(response);
+                                        WebSockGram listids = new TextWebSockGram(ser);
+                                        await listids.Send(webSocket);
                                     }
                                 }
                                 else
@@ -518,20 +527,20 @@ namespace CompletelyUnsafeMessenger
 
                                         // Saving the received image
                                         byte[] imageData = (receivedGram as BinaryWebSockGram).Data.ToArray();
-                                        var savedImageFileName = imagesController.Add(uploadImageMessageCommand.Card.Filename, new MemoryStream(imageData));
+                                        var savedImageFileName = imagesController.Add(uploadImageMessageCommand.Value.Filename, new MemoryStream(imageData));
 
                                         lock (socketsAndMessagesLock)
                                         {
                                             // Setting up the link to the saved file. Adding it to the received Card data
-                                            var imageFileCard = uploadImageMessageCommand.Card;
+                                            var imageFileCard = uploadImageMessageCommand.Value;
                                             imageFileCard.Link = new Uri(listenerContext.Request.Url, "data/" + savedImageFileName);
 
                                             // Creating a new card in the controller, containing the received image
-                                            deskController.AddCard(imageFileCard);
+                                            cabinetController.UpdateCard(uploadImageMessageCommand.Id, imageFileCard);
 
                                             // Broadcasting the add_card command to all the connected clients 
                                             Logger.Log("Broadcasting the new image card " + imageFileCard.Link + " to the " + connectedSockets.Count + " connected clients");
-                                            var addCommand = new Model.Commands.AddCardCommand(imageFileCard);
+                                            var addCommand = new Model.Commands.UpdateCardCommand(uploadImageMessageCommand.Id, imageFileCard);
                                             TextWebSockGram addCardGram = new TextWebSockGram(serializer.SerializeCommand(addCommand));
                                             addCardGram.Broadcast(connectedSockets).Wait();
                                         }

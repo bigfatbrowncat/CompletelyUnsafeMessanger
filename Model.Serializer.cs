@@ -28,25 +28,25 @@ namespace CompletelyUnsafeMessenger
             };
 
             /// <summary>
-            /// Serializes a <see cref="Data.Desk"/> object to a file
+            /// Serializes a <see cref="Data.Cabinet"/> object to a file
             /// </summary>
             /// <param name="desk">Desk object to be serialized</param>
             /// <param name="jsonFilename">Target JSON file name</param>
-            public void SerializeDeskToFile(Data.Desk desk, string jsonFilename)
+            public void SerializeDeskToFile(Data.Cabinet desk, string jsonFilename)
             {
                 var jsonString = JsonSerializer.Serialize(desk, serializerOptions);
                 File.WriteAllText(jsonFilename, jsonString);
             }
 
             /// <summary>
-            /// Deserializes a <see cref="Data.Desk"/> object from a file
+            /// Deserializes a <see cref="Data.Cabinet"/> object from a file
             /// </summary>
             /// <param name="jsonFilename">Source JSON file name</param>
-            /// <returns><see cref="Data.Desk"/> object decoded from the file contents</returns>
-            public Data.Desk DeserializeDeskFromFile(string jsonFilename)
+            /// <returns><see cref="Data.Cabinet"/> object decoded from the file contents</returns>
+            public Data.Cabinet DeserializeDeskFromFile(string jsonFilename)
             {
                 var jsonString = File.ReadAllText(jsonFilename);
-                return JsonSerializer.Deserialize<Data.Desk>(jsonString, serializerOptions);
+                return JsonSerializer.Deserialize<Data.Cabinet>(jsonString, serializerOptions);
             }
 
             /// <summary>
@@ -115,9 +115,9 @@ namespace CompletelyUnsafeMessenger
                     if (reader.TokenType != JsonTokenType.String) throw new JsonException("A \"type\" should be a string value");
                     var value = reader.GetString();
 
-                    if (value == Commands.AddCardCommand.TYPE)
+                    if (value == Commands.UpdateCardCommand.TYPE)
                     {
-                        Commands.AddCardCommand res = JsonSerializer.Deserialize<Commands.AddCardCommand>(ref secondReader, options);
+                        Commands.UpdateCardCommand res = JsonSerializer.Deserialize<Commands.UpdateCardCommand>(ref secondReader, options);
                         reader = secondReader;
                         return res;
                     }
@@ -127,8 +127,15 @@ namespace CompletelyUnsafeMessenger
                         reader = secondReader;
                         return res;
                     }
+                    else if (value == Commands.ListCardIDsCommand.TYPE)
+                    {
+                        Commands.ListCardIDsCommand res = JsonSerializer.Deserialize<Commands.ListCardIDsCommand>(ref secondReader, options);
+                        reader = secondReader;
+                        return res;
+                    }
                     else throw new JsonException("A \"type\" should be either \""
-                        + Commands.AddCardCommand.TYPE + "\" or \""
+                        + Commands.UpdateCardCommand.TYPE + "\" or \""
+                        + Commands.ListCardIDsCommand.TYPE + "\" or \""
                         + Commands.UploadImageCardCommand.TYPE + "\"");
                 }
                 throw new JsonException("JSON parser can't find the \"type\" property");

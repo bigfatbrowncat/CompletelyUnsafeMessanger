@@ -1,0 +1,62 @@
+﻿@font-face {
+    font-family: 'AvrileSans';
+    font-weight: 100;
+    font-style: normal;
+    src: url('fonts/AvrileSans/AvrileSans-Thin.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSans';
+    font-weight: 200;
+    font-style: normal;
+    src: url('fonts/AvrileSans/AvrileSans-ExtraLight.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSans';
+    font-weight: 300;
+    font-style: normal;
+    src: url('fonts/AvrileSans/AvrileSans-Light.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSans';
+    font-weight: 400;
+    font-style: normal;
+    src: url('fonts/AvrileSans/AvrileSans-Regular.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSans';
+    font-weight: 500;
+    font-style: normal;
+    src: url('fonts/AvrileSans/AvrileSans-Medium.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSans';
+    font-weight: 600;
+    font-style: normal;
+    src: url('fonts/AvrileSans/AvrileSans-SemiBold.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSans';
+    font-weight: 700;
+    font-style: normal;
+    src: url('fonts/AvrileSans/AvrileSans-Bold.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSans';
+    font-weight: 800;
+    font-style: normal;
+    src: url('fonts/AvrileSans/AvrileSans-ExtraBold.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSans';
+    font-weight: 900;
+    font-style: normal;
+    src: url('fonts/AvrileSans/AvrileSans-Black.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}

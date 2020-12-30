@@ -31,15 +31,17 @@ namespace CompletelyUnsafeMessenger
             /// <summary>
             /// Command that adds a card to the bottom of the table
             /// </summary>
-            public class AddCardCommand : Command
+            public class UpdateCardCommand : Command
             {
-                public static string TYPE = "add_card";
-                public Data.Card Card { get; set; }
-                public AddCardCommand(Data.Card card) : base(TYPE)
+                public static string TYPE = "update_card";
+                public string Id { get; set; }
+                public Data.Card Value { get; set; }
+                public UpdateCardCommand(string Id, Data.Card value) : base(TYPE)
                 {
-                    this.Card = card;
+                    this.Id = Id;
+                    this.Value = value;
                 }
-                public AddCardCommand() : base(TYPE) { }
+                public UpdateCardCommand() : base(TYPE) { }
             }
 
             /// <summary>
@@ -53,12 +55,34 @@ namespace CompletelyUnsafeMessenger
             public class UploadImageCardCommand : Command
             {
                 public static string TYPE = "upload_image_card";
-                public Data.ImageCard Card { get; set; }
-                public UploadImageCardCommand(Data.ImageCard card) : base(TYPE)
+                public string Id { get; set; }
+                public Data.ImageCard Value { get; set; }
+                public UploadImageCardCommand(Data.ImageCard value) : base(TYPE)
                 {
-                    this.Card = card;
+                    this.Value = value;
                 }
                 public UploadImageCardCommand() : base(TYPE) { }
+            }
+
+            /// <summary>
+            /// Command that requests the card IDs list
+            /// </summary>
+            public class ListCardIDsCommand : Command
+            {
+                public static string TYPE = "list_card_ids";
+
+                private List<string> ids;
+                public IList<string> Ids { 
+                    get { return ids; } 
+                    set { ids = new List<string>(value); } 
+                }
+                public ListCardIDsCommand(IList<string> Ids) : base(TYPE)
+                {
+                    this.Ids = Ids;
+                }
+                public ListCardIDsCommand() : base(TYPE)
+                {
+                }
             }
         }
     }

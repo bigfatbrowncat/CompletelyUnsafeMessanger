@@ -1,0 +1,62 @@
+﻿@font-face {
+    font-family: 'AvrileSerif';
+    font-weight: 100;
+    font-style: normal;
+    src: url('fonts/AvrileSerif/AvrileSerif-Thin.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSerif';
+    font-weight: 200;
+    font-style: normal;
+    src: url('fonts/AvrileSerif/AvrileSerif-ExtraLight.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSerif';
+    font-weight: 300;
+    font-style: normal;
+    src: url('fonts/AvrileSerif/AvrileSerif-Light.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSerif';
+    font-weight: 400;
+    font-style: normal;
+    src: url('fonts/AvrileSerif/AvrileSerif-Regular.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSerif';
+    font-weight: 500;
+    font-style: normal;
+    src: url('fonts/AvrileSerif/AvrileSerif-Medium.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSerif';
+    font-weight: 600;
+    font-style: normal;
+    src: url('fonts/AvrileSerif/AvrileSerif-SemiBold.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSerif';
+    font-weight: 700;
+    font-style: normal;
+    src: url('fonts/AvrileSerif/AvrileSerif-Bold.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSerif';
+    font-weight: 800;
+    font-style: normal;
+    src: url('fonts/AvrileSerif/AvrileSerif-ExtraBold.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+@font-face {
+    font-family: 'AvrileSerif';
+    font-weight: 900;
+    font-style: normal;
+    src: url('fonts/AvrileSerif/AvrileSerif-Black.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}

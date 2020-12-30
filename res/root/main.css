@@ -21,6 +21,38 @@
     to { opacity: 1; }
 }
 
+input[type=text].markup_editor, textarea.markup_editor {
+    font-family: 'AnonymousPro';
+    font-size: 9pt;
+    padding-left: 5pt;
+    padding-right: 5pt;
+}
+
+html {
+    font-family: "AvrileSans";
+}
+
+input[type=button], input[type=submit], input[type=text], button {
+    font-family: "AvrileSans";
+    font-size: 9pt;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "AvrileSerif";
+}
+
+li {
+    border-style: none none none solid;
+    border-color: rgba(0, 148, 255, 0.0);
+    border-width: 5pt;
+}
+
+li:hover {
+    border-style: none none none solid;
+    border-color: rgba(0, 148, 255, 0.2);
+    border-width: 5pt;
+}
+
 .fadein {
     -webkit-animation: fadein 0.75s; /* Safari, Chrome and Opera > 12.1 */
     -moz-animation: fadein 0.75s; /* Firefox < 16 */
@@ -30,10 +62,8 @@
 }
 
 body {
-    max-width: 1000px;
     min-width: 612px;
     margin: auto;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 input, ul {
@@ -45,15 +75,10 @@ form {
     display: block;
     margin: 0px;
     padding: 0px;
-    background-color: #eeeeee;
 }
 
 img {
     margin: auto;
-}
-
-form > div {
-    padding: 5px;
 }
 
 #textForm {
@@ -95,13 +120,12 @@ li {
     display: block;
     margin: 3pt 0pt;
     padding: 5pt;
-    background-color: #eeeeee;
 }
 
-    li.image {
-        position: relative;
-        text-align: center;
-    }
+li.image {
+    position: relative;
+    text-align: center;
+}
 
 input {
     display: inline-block;
@@ -110,24 +134,44 @@ input {
     font-size: 12px;
 }
 
-    input[type=button], input[type=submit] {
-        margin: 5px 0 0 0;
-        padding: 3pt 7pt;
-        border-width: 1px;
-    }
+input[type=button], input[type=submit], input[type=text], button {
+    padding: 3pt 7pt;
+    border-width: 1px;
+    margin: 0;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.2);
+    height: 20pt;
+}
 
-    input[type=submit] {
-        background: #55bb44;
-        color: white;
-        border-color: #550044;
-        border-width: 1px;
-    }
+input[type=submit] {
+    background: #55bb44;
+    color: white;
+    border-width: 1px;
+}
+    
+button.hazard {
+    background: #bb5544;
+    color: white;
+    border-width: 1px;
+}
 
 textarea {
     resize: vertical;
+    padding: 3pt 5pt;
     width: 100%;
-    min-height: 200px;
-    border-style: none;
+}
+
+textarea, .CodeMirror {
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+input, textarea, button, .CodeMirror {
+    outline-color: rgba(0, 0, 0, 0.3);
+    outline-width: 1px;
+    outline-offset: 1px;
+    border-radius: 2px;
 }
 
 div.filename {
@@ -153,4 +197,65 @@ div.credits {
 
 #browse {
     float: right;
+}
+
+div.page_centered {
+    max-width: 1000px;
+    min-height: 16px;
+    margin: auto;
+    position: relative;
+}
+
+page-template, content-source {
+    display: none;
+}
+
+content {
+    display: block;
+    margin: 10pt;
+}
+
+.edit-zone {
+    position: absolute;
+    right: 0;
+    top: 0;
+    opacity: 0.2;
+    width: 33vw;
+    min-height: 33vh;
+}
+
+    .edit-zone:hover {
+        opacity: 1.0;
+    }
+
+edit-menu {
+    position: absolute;
+    display: inline-block;
+    margin: 10pt;
+    right: 0;
+    top: 0;
+}
+
+page {
+    position: relative;
+    overflow: hidden;
+    height: 100vh;
+}
+
+.CodeMirror {
+    height: calc(100% - 5pt);
+    max-height: 40vh;
+}
+
+.cm-s-default .cm-trailing-space-a:before,
+.cm-s-default .cm-trailing-space-b:before {
+    position: absolute;
+    content: "\00B7";
+    color: #777;
+}
+
+.cm-s-default .cm-trailing-space-new-line:before {
+    position: absolute;
+    content: "\21B5";
+    color: #777;
 }

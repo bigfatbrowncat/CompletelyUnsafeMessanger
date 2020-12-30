@@ -21,7 +21,7 @@ namespace CompletelyUnsafeMessenger
             }
 
             /// <summary>
-            /// Represents a card with some text on it
+            /// Represents a card containing text
             /// </summary>
             public class TextCard : Card
             {
@@ -36,7 +36,7 @@ namespace CompletelyUnsafeMessenger
             }
 
             /// <summary>
-            /// Represents a card with an image. It holds only the image name and URL. 
+            /// Represents a card containing an image. It holds only the image name and URL. 
             /// The image data itself should be kept in a separate file (accessible via the provided URL)
             /// </summary>
             public class ImageCard : Card
@@ -56,20 +56,20 @@ namespace CompletelyUnsafeMessenger
             }
 
             /// <summary>
-            /// Represents a desk with cards on it
+            /// Represents a "cabinet" with cards in it
             /// </summary>
-            public class Desk
+            public class Cabinet
             {
-                private List<Card> cards = new List<Card>();
-                public ICollection<Card> Cards
+                private Dictionary<string, Card> cards = new Dictionary<string, Card>();
+                public IDictionary<string, Card> Cards
                 { 
                     get { return cards; }
-                    set { cards = new List<Card>(value); } 
+                    set { cards = new Dictionary<string, Card>(value); } 
                 }
-                public Desk() { }
-                public Desk(IEnumerable<Card> cards)
+                public Cabinet() { }
+                public Cabinet(IDictionary<string, Card> cards)
                 {
-                    this.cards = new List<Card>(cards);
+                    this.cards = new Dictionary<string, Card>(cards);
                 }
             }
         }

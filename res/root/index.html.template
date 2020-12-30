@@ -2,38 +2,59 @@
 <head>
     <meta charset="utf-8" />
     <title>{Application.ProductName}</title>
+    <link rel="stylesheet" href="avrile-serif.css" />
+    <link rel="stylesheet" href="avrile-sans.css" />
+    <link rel="stylesheet" href="anonymous-pro.css" />
+
+    <!-- CodeMirror deps -->
+    <link rel="stylesheet" href="codemirror/lib/codemirror.css">
+    <script src="codemirror/lib/codemirror.js"></script>
+    <script src="codemirror/addon/edit/continuelist.js"></script>
+    <script src="codemirror/mode/xml/xml.js"></script>
+    <script src="codemirror/mode/javascript/javascript.js"></script>
+    <script src="codemirror/mode/markdown/markdown.js"></script>
+
+    <script src="showdown.js"></script>
+    <script src="nanowiki.js"></script>
+    <script src="pager.js"></script>
+    <script src="card_editors/text_card_editor.js"></script>
+
     <link rel="stylesheet" href="main.css" />
 </head>
 <body>
-    <ul id="cards">
-    </ul>
 
-    <div class="editor fadein">
-        <form id="imageForm">
-            <div>
-                <div id="input-frame">
-                    <input id="filename" type="file" accept="image/jpeg,image/png,image/bmp,image/tiff" style="display:none;" multiple />
-                    <div id="preview-outer-div">
-                        <div id="preview-inner-div">
-                            <img id="preview" />
+    <page-template id="template.text_card_editor">
+        <div style="display: flex; flex-flow: column; align-items: stretch; height: 100%;">
+            <div style="overflow-y: auto; overflow-x: hidden; flex: 1 1 auto;">
+                <div class="page_centered">
+                    <content></content>
+                </div>
+            </div>
+            <content-source>
+            </content-source>
+            <edit-menu>
+                <button name="edit">Edit</button>
+                <button class="hazard" name="delete">Delete</button>
+            </edit-menu>
+            <editor style="background-color: #eeeeee; flex: 1 1 auto;">
+                <div class="page_centered" style="padding: 0 5px;">
+                    <form style="display: flex; flex-flow: column; align-items: stretch; height: 100%;">
+                        <div style="flex: 0 1 auto;">
+                            <input type="hidden" name="id" value="" />
+                            <div style="margin: 5pt 0; position: relative">
+                                <input type="submit" value="Confirm" />
+                                <input type="button" name="cancel" value="Cancel" />
+                            </div>
+                            <input name="title" class="markup_editor" style="width: 100%; margin-bottom: 5pt" type="text" placeholder="Title" value="" />
                         </div>
-                    </div>
+                        <div style="flex: 1 1 auto;">
+                            <textarea class="markup_editor" name="message" style="display: none"></textarea>
+                        </div>
+                    </form>
                 </div>
-                <input type="submit" value="Send image" /><input type="button" id="browse" value="Browse..." />
-            </div>
-        </form>
-        <form id="textForm">
-            <div>
-                <div id="input-frame">
-                    <textarea id="message"></textarea>
-                </div>
-                <input type="submit" value="Send text" />
-            </div>
-        </form>
-    </div>
-    <div class="credits">Powered by <em>bigfatbrowncat's</em> {Application.ProductName} v{Application.Version}</div>
+            </editor>
+        </div>
+    </page-template>
 
-    <script src="index.js">
-    </script>
 </body>
 </html>
