@@ -1,7 +1,10 @@
 (function () {
     // Checking dependencies
     if (nanowiki === undefined) {
-        console.error("Nanowiki not found in the global NS. Include nanowiki.js before text_card_editor.js");
+        console.error("nanowiki not found in the global NS. Include nanowiki.js before text_card_editor.js");
+    }
+    if (protocol === undefined) {
+        console.error("protocol not found in the global NS. Include protocol.js before text_card_editor.js");
     }
 
     // *** Globals ***
@@ -41,8 +44,8 @@
 
     // *** Page-globals ***
 
-    var webSocketProtocol = location.protocol == "https:" ? "wss:" : "ws:";
-    var webSocketURI = webSocketProtocol + "//" + location.host + "";
+    //var webSocketProtocol = location.protocol == "https:" ? "wss:" : "ws:";
+    //var webSocketURI = webSocketProtocol + "//" + location.host + "";
 
     var remarkupAll = function () {
         // Updating all the pages markup
@@ -65,6 +68,7 @@
         var edit_menu = newPage.querySelector("edit-menu");
         var edit_button = edit_menu.querySelector('[name="edit"]');
         var cancel_button = newPage.querySelector('[name="cancel"]');
+        var submit_button = newPage.querySelector('input[type="submit"]');
 
         var idTag = textForm.querySelector('[name="id"]');
         var message = textForm.querySelector('[name="message"]');
@@ -114,31 +118,71 @@
         }
 
         // Creating a websocket connection for the editor
-        var socket = new WebSocket(webSocketURI);
-        socket.binaryType = 'arraybuffer';
+        //var socket = new WebSocket(webSocketURI);
+        //socket.binaryType = 'arraybuffer';
 
-        var sendListIdsRequest = function () {
+        /*var sendListIdsRequest = function () {
             var sendListIdsRequestCommand = {
                 type: "list_card_ids",
             };
             socket.send(JSON.stringify(sendListIdsRequestCommand));
-        }
+        }*/
 
-        socket.onopen = function () {
+        /*socket.onopen = function () {
             console.log("Connected");
             sendListIdsRequest();
-        };
+        };*/
 
-        socket.onclose = function (event) {
+        // Request IDs list
+        protocol.sendListCardIdsRequest();
+
+        // Initializing the editor fir the case that the page doesn't exist
+        codeMirrorFromTextArea();
+
+        document.addEventListener("protocol.connected", function () {
+            // Request IDs list on reconnect
+            protocol.sendListCardIdsRequest();
+            submit_button.disabled = false;
+        });
+
+        document.addEventListener("protocol.disconnected", function () {
+            submit_button.disabled = true;
+        });
+
+        /*socket.onclose = function (event) {
             if (event.wasClean) {
                 console.log('Disconnected');
             } else {
                 console.log('Connection lost'); // for example if server processes is killed
             }
             console.log('Code: ' + event.code + '. Reason: ' + event.reason);
-        };
+        };*/
 
-        socket.onmessage = function (event) {
+        document.addEventListener("protocol.message.update_card", function (evt) {
+            var command = evt.detail;
+
+            if (command.id == newPageId) {
+
+                codeMirrorToTextArea();
+                message.value = command.value.text;
+                codeMirrorFromTextArea();
+
+                // Updating the page
+                content_source.innerHTML = command.value.text;
+
+                remarkup();
+            }
+        });
+
+        document.addEventListener("protocol.message.list_card_ids", function (evt) {
+            var command = evt.detail;
+
+            // Updating links based on the currently loaded pages
+            document.nanowiki.update_links(command.ids);
+            remarkupAll();
+        });
+
+        /*socket.onmessage = function (event) {
             if (event.data instanceof ArrayBuffer) {
                 // Disabled by the current protocol (sending images
                 // from server to client thru WebSocket is ineffective)
@@ -171,14 +215,14 @@
         socket.onerror = function (error) {
             console.log("Error: " + error.message);
             socket.close();
-        };
+        };*/
 
         // "Confirm" button
         textForm.onsubmit = function () {
             codeMirrorToTextArea();
             editor.style.display = "none";
 
-            var updateTextCardCommand = {
+           /* var updateTextCardCommand = {
                 type: "update_card",
                 id: idTag.value,
                 value: {
@@ -186,7 +230,9 @@
                     text: message.value
                 }
             };
-            socket.send(JSON.stringify(updateTextCardCommand));
+            socket.send(JSON.stringify(updateTextCardCommand));*/
+
+            protocol.sendUpdateTextCardCommand(idTag.value, message.value);
 
             return false;   // Don't submit the form in the regular way
         };

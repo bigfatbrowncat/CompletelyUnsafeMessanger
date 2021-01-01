@@ -16,6 +16,7 @@
 
     <script src="showdown.js"></script>
     <script src="nanowiki.js"></script>
+    <script src="protocol.js"></script>
     <script src="pager.js"></script>
     <script src="card_editors/text_card_editor.js"></script>
 
@@ -55,6 +56,18 @@
             </editor>
         </div>
     </page-template>
+    <script>
 
+        document.addEventListener("protocol.connected", function () {
+            pager.loadInitialPage();
+        });
+
+        window.addEventListener("load", function () {
+            protocol.openSocket();
+
+            // The pages are parsed and selected, now we can show the body
+            document.body.style.display = "block";
+        });
+    </script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 ﻿(function () {
+	// 1
 	// Checking dependencies
 	if (nanowiki === undefined) {
 		console.error("Nanowiki not found in the global NS. Include nanowiki.js before text_card_editor.js");
@@ -61,34 +62,37 @@
 	body_hidden.innerHTML = "body { display: none; }";
 	document.getElementsByTagName('head')[0].appendChild(body_hidden);
 
+	var hash_change = function () {
+		if (document.location.hash == "" || document.location.hash == "#") {
+			var pages = document.body.getElementsByTagName(Document.prototype.pager.config.tags.page);
+			document.location.hash = "index";//pages[0].id;
+		}
+
+		var pageId = document.location.hash;
+		if (pageId.charAt(0) == "#") pageId = pageId.substring(1);
+		if (pageId.charAt(0) == "/") pageId = pageId.substring(1);
+
+		switch_page(pageId);
+	};
+
+	var load_initial_page = function () {
+		hash_change();
+	};
+
+	window.addEventListener("hashchange", hash_change);
+
 	window.addEventListener("load", function () {
-		var hashchange = function () {
-			if (document.location.hash == "" || document.location.hash == "#") {
-				var pages = document.body.getElementsByTagName(Document.prototype.pager.config.tags.page);
-				document.location.hash = "index";//pages[0].id;
-			}
-
-			var pageId = document.location.hash;
-			if (pageId.charAt(0) == "#") pageId = pageId.substring(1);
-			if (pageId.charAt(0) == "/") pageId = pageId.substring(1);
-
-			switch_page(pageId);
-		};
-
-		window.addEventListener("hashchange", hashchange);
-		// Running the onHashChange manually on the first load
-		hashchange();
-
 		// The pages are parsed and selected, now we can show the body
 		document.body.style.display = "block";
 	});
 
 	// Declaring the interface
 	var pager = {
-		find_page_by_id: find_page_by_id,
-		show_page: show_page,
-		find_page_template_by_id: find_page_template_by_id,
-		create_page: create_page,
+		findPageById: find_page_by_id,
+		showPage: show_page,
+		findPageTemplateById: find_page_template_by_id,
+		createPage: create_page,
+		loadInitialPage: load_initial_page,
 
 		config: {
 			tags: {
